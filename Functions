@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 20 22:59:31 2020
+
+@author: matthewsmith
+"""
+
+#Questions
+# do i need ot add a minimum  to the 'kappa' function? or is that implied in his given eqn im not sure
+
+# there is the option to make Z and X global variables and
+# remove them from the function definitons. I did not though, we'll ee if it effects runge kutta
+
+# =============================================================================
+# Defining constants
+# =============================================================================
+pi=1
+hbar=1
+me=1
+mp=1
+k=1
+a=1# what is a? i am unsure
+c=1
+gamma=1
+G=1
+
+# =================Defining mu, XYZ=====================================
+X=1
+Y=1
+Z=1
+mu=1/(2*X+0.75*Y+0.5*Z)
+
+# =============================================================================
+# Pressure equations
+# =============================================================================
+def Pressure(rho,T):
+    
+    const1 = (((3*pi**2)**(2/3))/5)*  ((hbar**2)/me)
+    term1 = const1*(rho/mp)**(5/3)
+    
+    const2 = k/(mu*mp)
+    term2 = const2*rho*T
+
+    const3 = a/3
+    term3 = const3*(T**4)
+    return term1+term2+term3
+
+# Partial derivitave of pressure w.r.t density
+def DelPressureDelrho(rho,T):
+    
+    const1 = (((3*pi**2)**(2/3))/3)*((hbar**2)/(me*mp))
+    term1 = const1*(rho/mp)**(2/3)
+    
+    const2 = k/(mu*mp)
+    term2 = T*const2
+    
+    return term1+term2
+
+# Partial derivitave of pressure w.r.t temperature
+def DelPressuredelT(rho,T):
+    
+    const1 = k/(mu*mp)
+    term1 = rho*const1
+    
+    const2 = 4*a/3
+    term2 = const2*(T**3)
+    
+    return term1+term2 
+
+# =============================================================================
+# kappa definitions
+# =============================================================================
+
+#Kaapa H-
+def kappaHminus(Z,rho,T):
+    
+    rho3 = rho/1e3
+    
+    return 2.5e-32 * (Z/0.02) * (rho3**0.5) * (T**9)
+  
+# Kaapa ff
+def Kappaff(Z,rho,T):
+    rho3 = rho/1e3
+    return 1e24 * (Z+0.0001) * (rho3**0.7) * (T**-3.5 )
+
+#kappa es
+def Kappaes(X):
+    return 0.02*(1+X)
+
+# the real slim kappa
+def kappa(X,Z,rho,T):
+    term1 = 1/kappaHminus(Z,rho,T)
+
+    term2 = 1/max([Kappaff(Z,rho,T),Kappaes(X)]) # max fn take itterale and reterns largest, so i put the kappas in a list
+    
+    return 1/(term1+term2)
+
+# =============================================================================
+# Energy generation epsilon
+# =============================================================================
+
+def EpsilonPP(X,rho,T):
+    rho5 = rho/1e5
+    T6 = T/1e6
+    
+    return 1.07e-7 * rho5 * (X**2) *T6**4
+def EpsiilonCNO(X,rho,T):
+    rho5 = rho/1e5
+    T6 = T/1e6
+    Xcno = 0.03*X
+    
+    8.24e-26 * rho5 * X * Xcno * (T6**19.9)
+    
+def Epsilon(X,rho,T):
+    return EpsilonPP(X,rho,T)+EpsiilonCNO(X,rho,T)
+
+# =============================================================================
+# The Big 5 Equations
+# =============================================================================
+# 1) Partial derivitave of  w.r.t radius
+
+def DRhoDr(r,rho,M,kappa,DelPDelrho,DelPressuredelT,DTempDr):
+    
+    term1 = -1*(G * M * rho)/(r**2)
+    
+    term2= DelPressuredelT*DTempDr
+    
+    return (term1+term2)/DelPDelrho
+    
+    
+# 2) Derivitave of Temperature w.r.t radius
+def DTDr(r,rho,T,L,M,kappa,P):
+    
+    const1 = 3/(16*pi*a*c)
+    term1 = (const1 * rho * L) / ((T**3) * (r**2))
+    
+    const2 = (1-(1/gamma))*G
+    term2 = const2 * (T * M * rho) / (P * (r**2))
+    
+    return -1*min([term1,term2])
+
+# 3) Derivitave of Mass w.r.t radius
+def DMDr(r,rho):
+    return 4 * pi * (r**2) * rho 
+
+# 4) Derivitave of Luminosity w.r.t radius
+def DLDr(r,rho,epsilon):
+    return 4 * pi * (r**2) * rho * epsilon
+
+# 5) Derivitave of optical depth w.r.t radius
+def DTauDr(kappa,rho):
+    return kappa*rho
+
+# fora  function x(t)
+# we are computing f(t,x)
+#Where t and x are the function inputs
+
+
+K1= h * derivitave(t,x)
+
